@@ -31,5 +31,5 @@ python get_verts.py names_to_search.csv verts_fname.csv
 python get_edges.py verts_fname.csv edges_fname.csv
 ```
 
-At this point you could just load your edgelist and vertex file into your favorite graph visualization tool (mine is cytoscape) and go from there - but that would be to easy. The <b>twitter-graph</b> ipython-notebok shows a few examples of how you can programmatically generate some cool graphs and do analysis with the igraph package. 
+At this point you could just load your edgelist and vertex file into your favorite graph visualization tool (mine is cytoscape) and go from there - but that would be to easy. The <b>twitter-graph.ipynb</b> ipython-notebook shows a few examples of how you can programmatically generate some cool graphs and do analysis with the igraph package. 
 
