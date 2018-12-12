@@ -1,7 +1,7 @@
 # nba-twitter-analysis
 ## Making graphs of player-player connections on twitter
 
-![Warriors Twitter Graph](https://imgur.com/a/JYZr0yG "GSW Graph")
+<img src="https://i.imgur.com/rg3jmua.png">
 
 #### Requires:
   * python
