@@ -1,12 +1,33 @@
 # nba-twitter-analysis
-Making graphs of player-player connections on twitter
+## Making graphs of player-player connections on twitter
 
-Python 2.7, python-twitter, python-igraph
+![Warriors Twitter Graph](https://imgur.com/a/JYZr0yG "GSW Graph")
 
-If you use any of this stuff show your appreciation by liking my band, High Heat, on Facebook -> https://www.facebook.com/highheatrocks/ ! 
+#### Requires:
+  * python
+  * python-twitter
+  * python-igraph
+  * jupyter
+   
+#### Usage:
+First, in both <b>get_verts.py</b> and <b>get_edges.py</b> you'll need to put in your twitter developer credentials. If you don't know what this means, check out this walkthrough.
 
-I'm open to forks, pushes, whatever if someone wants to add/correct anything. 
+```python
+# returns twitter api
+# (this codeblock is in both .py files)
+def getAPI():
+    api = twitter.Api(consumer_key="",
+                  consumer_secret="",
+                  access_token_key="",
+                  access_token_secret="")
+    api.sleep_on_rate_limit = True
+    return api
+```
 
-Thanks, 
+Run <b>get_verts.py</b> on a set of twitter names to search for these names and output a list of twitter ids. It was written with the intent of running on a list of NBA athletes, but any .csv style file with whatever you want to search for per user as the first column will work (some modification required as noted by comments). Then, to find the all edges between vertices in this set run <b>get_edges.py</b> on the vertex file, which outputs an edgelist file. 
 
-Sean
+```sh
+python get_verts.py names_to_search.csv verts_fname.csv
+python get_edges.py verts_fname.csv edges_fname.csv
+```
+
