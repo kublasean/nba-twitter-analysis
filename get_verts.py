@@ -1,11 +1,12 @@
 # get_verts.py
 # kublasean 
 # 8 - 14 - 2018
-# APPENDS a .csv of twitter ids from names to search for
+# writes a .csv of twitter ids from a .csv of names to search for
 import twitter
+from auth import getAPI
 import csv
 import sys
-import pickle
+import string 
 
 # returns twitter user obj after searching for str name
 def getUserFromName(name, api):
@@ -16,71 +17,83 @@ def getUserFromName(name, api):
             return user
     return None
 
-# argv = [ get_verts.py | infile.csv | outfile.csv ]
-def main():
-    players = []
-    teams = []
-    users = {}
-    debug = True
+# from https://stackoverflow.com/questions/92438/stripping-non-printable-characters-from-a-string-in-python
+def cleanUserName(name):
+    return ''.join(list(filter(lambda x: x in string.printable, name)))
 
-    # put api creds here
-    api = twitter.Api(consumer_key="",
-                  consumer_secret="",
-                  access_token_key="",
-                  access_token_secret="")
-    api.sleep_on_rate_limit = True
-    
-    if not api:
-        print("invalid credentials")
-        return -1
+# get V and V-attributes (id, name, scrn_name,...)
+# from searching for names in fname
+def getVerts(fname, debug=True, api=getAPI()):
+    fileoutput = ""
+    queries = []
+    numusers = 0
 
-    if len(sys.argv) != 3:
-        print("usage: python script.py infile.csv outfile.csv")
-        return -1
-    
-    # read list of nba player names from file
-    # expects player name as first field in each row
-    with open(sys.argv[1], 'r') as infile:
+    with open(fname, 'r') as infile:
         reader = csv.reader(infile, delimiter=',')
         for row in reader:
-            players.append(row[0])
-            if (len(row) >= 2):
-                teams.append(row[1]) # optional add other attribs here
+            queries.append(row)
     if debug:
-        output = "read " + repr(len(players)) + " player names from file"
+        output = "read " + repr(len(queries)) + " names to search from file"
         print(output)
     
-    # open output file
-    outfile = open(sys.argv[2], 'a+')
-    
-    # get V and V-attributes (id, name, scrn_name)
-    # writes lines as discovered for fear of Exceptions
-    counter = 0
-    for player in players:
-        output = repr(counter) + ", " + player + ": "
+    for i in range(len(queries)):
+        output = repr(i) + ", " + queries[i][0] + ": "
         try:
-            user = getUserFromName(player, api)
+            user = getUserFromName(queries[i][0], api)
         except Exception as e:
+            print(output, end='')
             print(e)
-            dump = open('user_dump', "w+")
-            pickle.dump(users, dump) #dump users found so far
-            dump.close()
-            outfile.close()
-            return -1
+            continue
         if user:
-            fileoutput = repr(user.id) + ",none," + user.screen_name + "," + teams[counter] + "\n"
-            users[repr(user.id)] = user
-            output += user.name
-            outfile.write(fileoutput)
+            fileoutput += ','.join([repr(user.id),queries[i][0],user.screen_name])
+            for attribute in queries[i][1:]:
+                fileoutput += ','+attribute
+            output += cleanUserName(user.name)
+            fileoutput+="\n"
+            numusers += 1
         if debug:
             print(output)
-        counter += 1
 
-    output = "pulled " + repr(len(users)) + " nba twitter users"
+    output = "pulled "+repr(numusers)+" verified twitter-ids from "+repr(len(queries))+" queries."
     if debug:
         print(output)
-    outfile.close()
-    return 0
-    
+    return fileoutput
+
+# argv = [ get_verts.py | infile.csv | outfile.csv ]    
 if __name__ == "__main__":
-    main()
+    api = getAPI()
+    output = ""
+    usage = "usage:\npython get_verts.py search [infile.csv] [outfile.csv]\n"
+    usage +="python get_verts.py followers [screen name] [outfile.csv]\n"
+    usage +="python get_verts.py following [screen name] [outfile.csv]\n"
+
+    if len(sys.argv) != 4:
+        print(usage)
+        quit()
+
+    if sys.argv[1] == "search":
+        output = getVerts(sys.argv[2], api=api)
+    elif sys.argv[1] == "followers":
+        followers = api.GetFollowers(screen_name=sys.argv[2])
+        for follower in followers:
+            try:
+                output += repr(follower.id)+','+cleanUserName(follower.name)+','+follower.screen_name+'\n'
+            except Exception as e:
+                print(e)
+                continue
+    elif sys.argv[1] == "following":
+        friends = api.GetFriends(screen_name=sys.argv[2])
+        for friend in friends:
+            try:
+                output += repr(friend.id)+','+cleanUserName(friend.name)+','+friend.screen_name+'\n'
+            except Exception as e:
+                print(e)
+                continue
+    else:
+        quit()
+
+    print(output)
+    #f = open(args[1], "w")
+    #f.write(output)
+    #f.close()
+

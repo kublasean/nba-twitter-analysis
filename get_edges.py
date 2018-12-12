@@ -6,15 +6,7 @@
 import twitter
 import csv
 import sys
-
-# returns twitter api
-def getAPI():
-    api = twitter.Api(consumer_key="",
-                  consumer_secret="",
-                  access_token_key="",
-                  access_token_secret="")
-    api.sleep_on_rate_limit = True
-    return api
+from auth import getAPI
 
 # argv = [ get_edges.py | infile.csv | outfile.csv ]
 def main():
